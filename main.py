@@ -3,7 +3,9 @@ import mediapipe as mp
 import time
 
 mpHands = mp.solutions.hands
+bodyPose = mp.solutions.pose
 hands = mpHands.Hands()
+mpPose = bodyPose.Pose()
 mpDraw = mp.solutions.drawing_utils
 
 cap = cv2.VideoCapture(0)
@@ -21,6 +23,7 @@ def main():
         sucess, img = cap.read()
         imgRGB = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         results = hands.process(imgRGB)
+        poseResults = mpPose.process(imgRGB)
         if results.multi_hand_landmarks:
             for handLms in results.multi_hand_landmarks:
                 for id, lm in enumerate(handLms.landmark):
@@ -29,6 +32,8 @@ def main():
                     if id == 4:
                         cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
                 mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS)
+        mpDraw.draw_landmarks(
+                     img, poseResults.pose_landmarks, bodyPose.POSE_CONNECTIONS)
 
         fps = getFps()
         cv2.putText(img, str(int(fps)),(60, 60),cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 255), 3)
